@@ -234,6 +234,7 @@ void doFlip()
         delay(2000);
         Serial.println("Mid-point reached. Parent servo to 0...");
         parentServo.write(0);
+        parentServo.write(90);
         delay(1500);
         Serial.println("Flip complete. Now in cAp.");
     }
@@ -248,6 +249,7 @@ void doFlip()
         delay(2000);
         Serial.println("Mid-point reached. Child servo to 180...");
         childServo.write(180);
+        childServo.write(90);
         delay(1500);
         Serial.println("Flip complete. Now in cBp.");
     }

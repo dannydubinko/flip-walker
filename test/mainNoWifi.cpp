@@ -7,7 +7,12 @@
 // cBp = child behind parent  -> sensor 1 (0x18) detecting
 // cAp = child ahead parent   -> sensor 2 (0x1A) detecting
 
-enum State { cBp, cAp, UNKNOWN };
+enum State
+{
+  cBp,
+  cAp,
+  UNKNOWN
+};
 
 Servo parentServo;
 Servo childServo;
@@ -19,23 +24,35 @@ void setMotorSpeed(int motor, int speed)
   int in1 = (motor == 1) ? Params::Pins::kMotor1_In1 : Params::Pins::kMotor2_In1;
   int in2 = (motor == 1) ? Params::Pins::kMotor1_In2 : Params::Pins::kMotor2_In2;
   speed = constrain(speed, -255, 255);
-  if (speed >= 0) { analogWrite(in1, speed); analogWrite(in2, 0); }
-  else            { analogWrite(in1, 0);     analogWrite(in2, -speed); }
+  if (speed >= 0)
+  {
+    analogWrite(in1, speed);
+    analogWrite(in2, 0);
+  }
+  else
+  {
+    analogWrite(in1, 0);
+    analogWrite(in2, -speed);
+  }
 }
 
 State getState()
 {
   bool s1 = mag1.isMagnetPresent();
   bool s2 = mag2.isMagnetPresent();
-  if (s1 && !s2) return cBp;
-  if (s2 && !s1) return cAp;
+  if (s1 && !s2)
+    return cBp;
+  if (s2 && !s1)
+    return cAp;
   return UNKNOWN;
 }
 
-const char* stateName(State s)
+const char *stateName(State s)
 {
-  if (s == cBp) return "cBp (child behind parent, sensor 1 active)";
-  if (s == cAp) return "cAp (child ahead parent, sensor 2 active)";
+  if (s == cBp)
+    return "cBp (child behind parent, sensor 1 active)";
+  if (s == cAp)
+    return "cAp (child ahead parent, sensor 2 active)";
   return "UNKNOWN";
 }
 
@@ -64,28 +81,38 @@ void doFlip()
     Serial.println("cBp -> flip forward: child servo to 0...");
     childServo.write(0);
     delay(1500);
+
     Serial.println("Waiting for mid-transition (both sensors clear)...");
-    if (!waitForTransition()) return;
+    waitForTransition();
+
+    Serial.println("Mid-point reached. Returning child servo to 90...");
     childServo.write(90);
     delay(2000);
-    Serial.println("Mid-point reached. Parent servo to 0...");
+
+    Serial.println("Activating parent servo to 0...");
     parentServo.write(0);
     delay(1500);
-    Serial.println("Flip complete. Now in cAp.");
+    parentServo.write(90);
+    delay(1500);
   }
   else if (s == cAp)
   {
     Serial.println("cAp -> flip forward: parent servo to 180...");
     parentServo.write(180);
     delay(1500);
+
     Serial.println("Waiting for mid-transition (both sensors clear)...");
-    if (!waitForTransition()) return;
+    waitForTransition();
+
+    Serial.println("Mid-point reached. Returning parent servo to 90...");
     parentServo.write(90);
     delay(2000);
-    Serial.println("Mid-point reached. Child servo to 180...");
+
+    Serial.println("Activating child servo to 180...");
     childServo.write(180);
     delay(1500);
-    Serial.println("Flip complete. Now in cBp.");
+    childServo.write(90);
+    delay(1500);
   }
   else
   {
@@ -96,7 +123,8 @@ void doFlip()
 void setup()
 {
   Serial.begin(115200);
-  while (!Serial) delay(10);
+  while (!Serial)
+    delay(10);
 
   pinMode(Params::Pins::kMotor1_In1, OUTPUT);
   pinMode(Params::Pins::kMotor1_In2, OUTPUT);
@@ -133,9 +161,11 @@ void loop()
 
     if (input.equalsIgnoreCase("r"))
     {
-      Serial.print("Mag1 (0x18): "); Serial.print(mag1.getMagnitude(), 2);
+      Serial.print("Mag1 (0x18): ");
+      Serial.print(mag1.getMagnitude(), 2);
       Serial.println(mag1.isMagnetPresent() ? " [PRESENT]" : " [NONE]");
-      Serial.print("Mag2 (0x1A): "); Serial.print(mag2.getMagnitude(), 2);
+      Serial.print("Mag2 (0x1A): ");
+      Serial.print(mag2.getMagnitude(), 2);
       Serial.println(mag2.isMagnetPresent() ? " [PRESENT]" : " [NONE]");
     }
     else if (input.equalsIgnoreCase("state"))
@@ -150,13 +180,15 @@ void loop()
     {
       int angle = constrain(input.substring(1).toInt(), 0, 180);
       parentServo.write(angle);
-      Serial.print("Parent servo -> "); Serial.println(angle);
+      Serial.print("Parent servo -> ");
+      Serial.println(angle);
     }
     else if (input.length() > 1 && input.charAt(0) == 'c')
     {
       int angle = constrain(input.substring(1).toInt(), 0, 180);
       childServo.write(angle);
-      Serial.print("Child servo -> "); Serial.println(angle);
+      Serial.print("Child servo -> ");
+      Serial.println(angle);
     }
     else
     {

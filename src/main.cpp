@@ -81,30 +81,38 @@ void doFlip()
     Serial.println("cBp -> flip forward: child servo to 0...");
     childServo.write(0);
     delay(1500);
+
     Serial.println("Waiting for mid-transition (both sensors clear)...");
-    if (!waitForTransition())
-      return;
+    waitForTransition();
+
+    Serial.println("Mid-point reached. Returning child servo to 90...");
     childServo.write(90);
     delay(2000);
-    Serial.println("Mid-point reached. Parent servo to 0...");
+
+    Serial.println("Activating parent servo to 0...");
     parentServo.write(0);
     delay(1500);
-    Serial.println("Flip complete. Now in cAp.");
+    parentServo.write(90);
+    delay(1500);
   }
   else if (s == cAp)
   {
     Serial.println("cAp -> flip forward: parent servo to 180...");
     parentServo.write(180);
     delay(1500);
+
     Serial.println("Waiting for mid-transition (both sensors clear)...");
-    if (!waitForTransition())
-      return;
+    waitForTransition();
+
+    Serial.println("Mid-point reached. Returning parent servo to 90...");
     parentServo.write(90);
     delay(2000);
-    Serial.println("Mid-point reached. Child servo to 180...");
+
+    Serial.println("Activating child servo to 180...");
     childServo.write(180);
     delay(1500);
-    Serial.println("Flip complete. Now in cBp.");
+    childServo.write(90);
+    delay(1500);
   }
   else
   {
