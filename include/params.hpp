@@ -25,6 +25,21 @@ namespace Params
         static constexpr int kMotor2_In2 = 25;
     } // End of Pins
 
+    namespace Motors
+    {
+        // Which hardware motor number (1 or 2) is left/right
+        static constexpr int leftMotor  = 1;
+        static constexpr int rightMotor = 2;
+
+        // Forward direction per motor: 1 = positive speed is forward, -1 = negative speed is forward
+        // Flip these if a motor is mounted in reverse
+        static constexpr int leftForward  =  1;
+        static constexpr int rightForward = -1;
+
+        // Default drive speed (0-255)
+        static constexpr int driveSpeed = 180;
+    } // End of Motors
+
     namespace Wifi
     {
         static constexpr const char *wifi_name = "BELL549";

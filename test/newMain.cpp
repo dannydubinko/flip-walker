@@ -90,6 +90,21 @@ const char index_html[] PROGMEM = R"rawliteral(
   </div>
 
   <div class="card">
+    <h3>Drive</h3>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;max-width:240px;margin:0 auto;">
+      <div></div>
+      <button onclick="sendCmd('fwd')">&#9650; Fwd</button>
+      <div></div>
+      <button onclick="sendCmd('left')">&#9664; Left</button>
+      <button class="danger" onclick="sendCmd('stop')">Stop</button>
+      <button onclick="sendCmd('right')">Right &#9654;</button>
+      <div></div>
+      <button onclick="sendCmd('bwd')">&#9660; Bwd</button>
+      <div></div>
+    </div>
+  </div>
+
+  <div class="card">
     <h3>DC Motors</h3>
     <p>Motor 1: <span id="m1_val" class="val">0</span></p>
     <input type="range" min="-255" max="255" value="0"
@@ -146,6 +161,30 @@ void setMotorSpeed(int motor, int speed)
     speed = constrain(speed, -255, 255);
     if (speed >= 0) { analogWrite(in1, speed); analogWrite(in2, 0); }
     else            { analogWrite(in1, 0);     analogWrite(in2, -speed); }
+}
+
+void driveForward()
+{
+    setMotorSpeed(Params::Motors::leftMotor,  Params::Motors::leftForward  * Params::Motors::driveSpeed);
+    setMotorSpeed(Params::Motors::rightMotor, Params::Motors::rightForward * Params::Motors::driveSpeed);
+}
+
+void driveBackward()
+{
+    setMotorSpeed(Params::Motors::leftMotor,  -Params::Motors::leftForward  * Params::Motors::driveSpeed);
+    setMotorSpeed(Params::Motors::rightMotor, -Params::Motors::rightForward * Params::Motors::driveSpeed);
+}
+
+void turnLeft()
+{
+    setMotorSpeed(Params::Motors::leftMotor,  -Params::Motors::leftForward  * Params::Motors::driveSpeed);
+    setMotorSpeed(Params::Motors::rightMotor,  Params::Motors::rightForward * Params::Motors::driveSpeed);
+}
+
+void turnRight()
+{
+    setMotorSpeed(Params::Motors::leftMotor,   Params::Motors::leftForward  * Params::Motors::driveSpeed);
+    setMotorSpeed(Params::Motors::rightMotor, -Params::Motors::rightForward * Params::Motors::driveSpeed);
 }
 
 // --- State Machine ---
@@ -237,6 +276,22 @@ void handleCmd()
     else if (cmd.equalsIgnoreCase("r"))
     {
         // handled via /sensors
+    }
+    else if (cmd.equalsIgnoreCase("fwd"))
+    {
+        driveForward();
+    }
+    else if (cmd.equalsIgnoreCase("bwd"))
+    {
+        driveBackward();
+    }
+    else if (cmd.equalsIgnoreCase("left"))
+    {
+        turnLeft();
+    }
+    else if (cmd.equalsIgnoreCase("right"))
+    {
+        turnRight();
     }
     else if (cmd.equalsIgnoreCase("stop"))
     {
