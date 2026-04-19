@@ -1,26 +1,32 @@
 #include <Arduino.h>
 #include <Wire.h>
 
-void setup() {
+void setup()
+{
   Wire.begin();
   Serial.begin(115200);
-  while (!Serial);
+  while (!Serial)
+    ;
   Serial.println("\nI2C Scanner");
 }
 
-void loop() {
+void loop()
+{
   byte error, address;
   int nDevices = 0;
 
   Serial.println("Scanning...");
 
-  for(address = 1; address < 127; address++ ) {
+  for (address = 1; address < 127; address++)
+  {
     Wire.beginTransmission(address);
     error = Wire.endTransmission();
 
-    if (error == 0) {
+    if (error == 0)
+    {
       Serial.print("I2C device found at address 0x");
-      if (address < 16) Serial.print("0");
+      if (address < 16)
+        Serial.print("0");
       Serial.print(address, HEX);
       Serial.println("  !");
       nDevices++;

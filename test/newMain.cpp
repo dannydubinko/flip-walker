@@ -6,6 +6,9 @@
 #include "params.hpp"
 
 // --- Wi-Fi Credentials ---
+// const char *ssid = "Nicol 116";
+// const char *password = "thenerdlab";
+
 const char *ssid = Params::Wifi::wifi_name;
 const char *password = Params::Wifi::wifi_password;
 
@@ -113,74 +116,74 @@ const char index_html[] PROGMEM = R"rawliteral(
  */
 void setMotorSpeed(int motor, int speed)
 {
-  int in1 = (motor == 1) ? MOTOR1_IN1 : MOTOR2_IN1;
-  int in2 = (motor == 1) ? MOTOR1_IN2 : MOTOR2_IN2;
+    int in1 = (motor == 1) ? MOTOR1_IN1 : MOTOR2_IN1;
+    int in2 = (motor == 1) ? MOTOR1_IN2 : MOTOR2_IN2;
 
-  if (speed >= 0)
-  {
-    analogWrite(in1, speed);
-    analogWrite(in2, 0);
-  }
-  else
-  {
-    analogWrite(in1, 0);
-    analogWrite(in2, -speed);
-  }
+    if (speed >= 0)
+    {
+        analogWrite(in1, speed);
+        analogWrite(in2, 0);
+    }
+    else
+    {
+        analogWrite(in1, 0);
+        analogWrite(in2, -speed);
+    }
 }
 
 void setup()
 {
-  Serial.begin(115200);
+    Serial.begin(115200);
 
-  // 1. Initialize DC Motor Pins
-  pinMode(MOTOR1_IN1, OUTPUT);
-  pinMode(MOTOR1_IN2, OUTPUT);
-  pinMode(MOTOR2_IN1, OUTPUT);
-  pinMode(MOTOR2_IN2, OUTPUT);
+    // 1. Initialize DC Motor Pins
+    pinMode(MOTOR1_IN1, OUTPUT);
+    pinMode(MOTOR1_IN2, OUTPUT);
+    pinMode(MOTOR2_IN1, OUTPUT);
+    pinMode(MOTOR2_IN2, OUTPUT);
 
-  // 2. Initialize Servos
-  myservo1.attach(servoPin1);
-  myservo2.attach(servoPin2);
-  myservo1.write(90);
-  myservo2.write(90);
+    // 2. Initialize Servos
+    myservo1.attach(servoPin1);
+    myservo2.attach(servoPin2);
+    myservo1.write(90);
+    myservo2.write(90);
 
-  // 3. Initialize Magnetometer Sensor
-  mag1.initalize();
-  mag2.initalize();
+    // 3. Initialize Magnetometer Sensor
+    mag1.initalize();
+    mag2.initalize();
 
-  mag1.setFullCalibration(
-      Params::MagSensorValues::RAW_READINGS_LEG_1,
-      Params::MagSensorValues::PHYSICAL_ANGLES);
-  mag2.setFullCalibration(
-      Params::MagSensorValues::RAW_READINGS_LEG_1,
-      Params::MagSensorValues::PHYSICAL_ANGLES);
+    mag1.setFullCalibration(
+        Params::MagSensorValues::RAW_READINGS_LEG_1,
+        Params::MagSensorValues::PHYSICAL_ANGLES);
+    mag2.setFullCalibration(
+        Params::MagSensorValues::RAW_READINGS_LEG_1,
+        Params::MagSensorValues::PHYSICAL_ANGLES);
 
-  // 4. Connect to Wi-Fi
-  delay(5000);
-  Serial.print("Connecting to Wi-Fi: ");
-  delay(5000);
-  Serial.println(ssid);
-  WiFi.begin(ssid, password);
+    // 4. Connect to Wi-Fi
+    delay(5000);
+    Serial.print("Connecting to Wi-Fi: ");
+    delay(5000);
+    Serial.println(ssid);
+    WiFi.begin(ssid, password);
 
-  while (WiFi.status() != WL_CONNECTED)
-  {
-    delay(500);
-    Serial.print(".");
-  }
+    while (WiFi.status() != WL_CONNECTED)
+    {
+        delay(500);
+        Serial.print(".");
+    }
 
-  Serial.println("\nWi-Fi Connected!");
-  Serial.print("IP Address: ");
-  Serial.println(WiFi.localIP());
+    Serial.println("\nWi-Fi Connected!");
+    Serial.print("IP Address: ");
+    Serial.println(WiFi.localIP());
 
-  // --- 5. Define Web Server Routes ---
+    // --- 5. Define Web Server Routes ---
 
-  // Serve the HTML page
-  server.on("/", HTTP_GET, []()
-            { server.send(200, "text/html", index_html); });
+    // Serve the HTML page
+    server.on("/", HTTP_GET, []()
+              { server.send(200, "text/html", index_html); });
 
-  // Handle Motor Updates (e.g. /motor?m=1&v=150)
-  server.on("/motor", HTTP_GET, []()
-            {
+    // Handle Motor Updates (e.g. /motor?m=1&v=150)
+    server.on("/motor", HTTP_GET, []()
+              {
         if (server.hasArg("m") && server.hasArg("v")) {
             int m = server.arg("m").toInt();
             int v = server.arg("v").toInt();
@@ -189,9 +192,9 @@ void setup()
         }
         server.send(200, "text/plain", "OK"); });
 
-  // Handle Servo Updates (e.g. /servo?s=1&v=90)
-  server.on("/servo", HTTP_GET, []()
-            {
+    // Handle Servo Updates (e.g. /servo?s=1&v=90)
+    server.on("/servo", HTTP_GET, []()
+              {
         if (server.hasArg("s") && server.hasArg("v")) {
             int s = server.arg("s").toInt();
             int v = server.arg("v").toInt();
@@ -201,9 +204,9 @@ void setup()
         }
         server.send(200, "text/plain", "OK"); });
 
-  // Handle Sensor Readings
-  server.on("/sensors", HTTP_GET, []()
-            {
+    // Handle Sensor Readings
+    server.on("/sensors", HTTP_GET, []()
+              {
         float m1_val = mag1.getRawHeading();
         float m2_val = mag2.getRawHeading();
         
@@ -212,28 +215,28 @@ void setup()
         server.send(200, "application/json", json);
         Serial.println("Web Command -> Read Sensors"); });
 
-  // Start the server
-  server.begin();
-  Serial.println("HTTP Server Started.");
-  Serial.println("You can still enter a servo angle (0-180) in the Serial Monitor.");
+    // Start the server
+    server.begin();
+    Serial.println("HTTP Server Started.");
+    Serial.println("You can still enter a servo angle (0-180) in the Serial Monitor.");
 }
 
 void loop()
 {
-  // 1. Listen for incoming web requests
-  server.handleClient();
+    // 1. Listen for incoming web requests
+    server.handleClient();
 
-  // 2. Serial Input for Servo Control (Kept for debugging)
-  if (Serial.available() > 0)
-  {
-    int angle = Serial.parseInt();
-
-    if (angle >= 0 && angle <= 180)
+    // 2. Serial Input for Servo Control (Kept for debugging)
+    if (Serial.available() > 0)
     {
-      Serial.print("Serial Command -> Moving Servos to: ");
-      Serial.println(angle);
-      myservo1.write(angle);
-      myservo2.write(angle);
+        int angle = Serial.parseInt();
+
+        if (angle >= 0 && angle <= 180)
+        {
+            Serial.print("Serial Command -> Moving Servos to: ");
+            Serial.println(angle);
+            myservo1.write(angle);
+            myservo2.write(angle);
+        }
     }
-  }
 }

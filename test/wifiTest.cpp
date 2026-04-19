@@ -6,8 +6,8 @@
 #include "params.hpp"
 
 // --- Wi-Fi Credentials ---
-const char *ssid = Params::Wifi::wifi_name;
-const char *password = Params::Wifi::wifi_password;
+const char *ssid = "Nicol 116";
+const char *password = "thenerdlab";
 
 // --- Web Server on Port 80 ---
 WebServer server(80);
@@ -156,9 +156,7 @@ void setup()
       Params::MagSensorValues::PHYSICAL_ANGLES);
 
   // 4. Connect to Wi-Fi
-  delay(5000);
   Serial.print("Connecting to Wi-Fi: ");
-  delay(5000);
   Serial.println(ssid);
   WiFi.begin(ssid, password);
 

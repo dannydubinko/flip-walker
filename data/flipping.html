@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FlipWalker Remote</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      padding: 40px;
+      background-color: #f4f4f9;
+    }
+    .container {
+      max-width: 400px;
+      margin: auto;
+      background: white;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+    input {
+      width: 80%;
+      padding: 10px;
+      margin-bottom: 20px;
+      font-size: 16px;
+      text-align: center;
+    }
+    .button {
+      display: block;
+      width: 100%;
+      margin: 10px 0;
+      padding: 15px 20px;
+      font-size: 18px;
+      font-weight: bold;
+      color: white;
+      background-color: #007BFF;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+    .button:active {
+      background-color: #0056b3;
+    }
+    .button.back {
+      background-color: #DC3545;
+    }
+    .button.back:active {
+      background-color: #a71d2a;
+    }
+    #status {
+      margin-top: 15px;
+      font-weight: bold;
+      color: #333;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h1>FlipWalker Control</h1>
+    
+    <p>ESP32 IP Address:</p>
+    <input type="text" id="ipAddress" placeholder="192.168.x.x" />
+
+    <button class="button" onclick="sendFlipCommand('flip_forward')">Flip Forward</button>
+    <button class="button back" onclick="sendFlipCommand('flip_backward')">Flip Backward</button>
+
+    <p id="status">Ready.</p>
+  </div>
+
+  <script>
+    function sendFlipCommand(action) {
+      const ip = document.getElementById('ipAddress').value.trim();
+      const statusText = document.getElementById('status');
+
+      if (!ip) {
+        statusText.style.color = 'red';
+        statusText.textContent = 'Please enter an IP address first.';
+        return;
+      }
+
+      statusText.style.color = '#333';
+      statusText.textContent = `Sending ${action}...`;
+
+      // Make the GET request to the ESP32
+      const url = `http://${ip}/?action=${action}`;
+
+      fetch(url)
+        .then(response => {
+          if (response.ok) {
+            statusText.style.color = 'green';
+            statusText.textContent = `Success: ${action}`;
+          } else {
+            throw new Error('Network response was not ok');
+          }
+        })
+        .catch(error => {
+          statusText.style.color = 'red';
+          statusText.textContent = `Error connecting to ${ip}`;
+          console.error('Error:', error);
+        });
+    }
+  </script>
+</body>
+</html>
