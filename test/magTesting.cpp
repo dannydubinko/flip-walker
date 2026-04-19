@@ -3,46 +3,31 @@
 #include "params.hpp"
 
 Magnetometer mag1(Params::magnetometerAddr1);
-#define MOTOR1_IN1 27
-#define MOTOR1_IN2 14
-#define MOTOR2_IN1 26
-#define MOTOR2_IN2 25
+Magnetometer mag2(Params::magnetometerAddr2);
 
 void setup()
 {
     Serial.begin(115200);
+    while (!Serial) delay(10);
 
-    // DC Motor Control Pins and Output
-    pinMode(MOTOR1_IN1, OUTPUT);
-    pinMode(MOTOR1_IN2, OUTPUT);
-    pinMode(MOTOR2_IN1, OUTPUT);
-    pinMode(MOTOR2_IN2, OUTPUT);
+    pinMode(Params::Pins::kMotor1_In1, OUTPUT);
+    pinMode(Params::Pins::kMotor1_In2, OUTPUT);
+    pinMode(Params::Pins::kMotor2_In1, OUTPUT);
+    pinMode(Params::Pins::kMotor2_In2, OUTPUT);
+    analogWrite(Params::Pins::kMotor1_In1, 0);
+    analogWrite(Params::Pins::kMotor1_In2, 0);
+    analogWrite(Params::Pins::kMotor2_In1, 0);
+    analogWrite(Params::Pins::kMotor2_In2, 0);
 
-    // Magnet Sensors
     mag1.initalize();
-
-    // Load the High-Precision data
-    mag1.setFullCalibration(
-        Params::MagSensorValues::RAW_READINGS_LEG_1,
-        Params::MagSensorValues::PHYSICAL_ANGLES);
-}
-
-void setMotorSpeed(int motor, int speed)
-{
-    int in1 = (motor == 1) ? MOTOR1_IN1 : MOTOR2_IN1;
-    int in2 = (motor == 1) ? MOTOR1_IN2 : MOTOR2_IN2;
-
-    analogWrite(in1, max(speed, 0));
-    analogWrite(in2, max(-speed, 0));
+    mag2.initalize();
 }
 
 void loop()
 {
-    setMotorSpeed(1, 50); // set motor speed right (battery side)
-    setMotorSpeed(2, 0);  // set motor speed left
-    // float jointAngle = mag1.getMagnitude();
-
-    Serial.print("Joint Angle: ");
-    // Serial.println(jointAngle);
-    delay(20);
+    Serial.print("Mag1: "); Serial.print(mag1.getMagnitude(), 2);
+    Serial.print(mag1.isMagnetPresent() ? " [PRESENT]" : " [NONE]   ");
+    Serial.print("  |  Mag2: "); Serial.print(mag2.getMagnitude(), 2);
+    Serial.println(mag2.isMagnetPresent() ? " [PRESENT]" : " [NONE]   ");
+    delay(100);
 }

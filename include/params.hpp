@@ -36,14 +36,15 @@ namespace Params
 
     namespace MagSensorValues
     {
-        // Reversed so the mapping aligns with the ascending raw readings
+        static constexpr float minMagnitude = 600.0;
+
+        // Shared physical angles — same for all sensors
         static const float PHYSICAL_ANGLES[7] = {90.0, 60.0, 30.0, 0.0, -30.0, -60.0, -90.0};
 
-        // Sorted in strictly ascending order
-        static const float RAW_READINGS_LEG_1[7] = {-72.9491, -82.5220, -94.9044, -99.0382, -85.4366, -46.4964, -38.9780};
-        static const float RAW_READINGS_LEG_2[7] = {151.8218, 154.4275, 157.8259, 153.6640, 153.5046, 152.9168, 150.4118};
+        // Per-leg raw readings (sorted ascending to pair with PHYSICAL_ANGLES)
+        static const float RAW_READINGS_LEG_1[7] = {-12.3284, -12.3132, -8.6361, -4.3975, 0.6608, 4.4029, 6.3600};
+        static const float RAW_READINGS_LEG_2[7] = {-6.7369, -6.5691, -4.7230, -1.4843, 3.7297, 7.2333, 8.7587};
         static const float RAW_READINGS_LEG_3[7] = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
-
     }
 
 } // End of Params

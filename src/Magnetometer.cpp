@@ -1,5 +1,7 @@
 #include "Magnetometer.hpp"
+#include "params.hpp"
 #include <Arduino.h>
+#include <math.h>
 
 Magnetometer::Magnetometer(int sensorAddr)
     : m_sensorAddr{sensorAddr}, m_isCalibrated{false}
@@ -73,6 +75,9 @@ float Magnetometer::getRawHeading()
  */
 float Magnetometer::getHeading()
 {
+  if (!isMagnetPresent())
+    return NAN;
+
   float rawHeading = getRawHeading();
 
   if (!m_isCalibrated)
@@ -99,6 +104,9 @@ float Magnetometer::getHeading()
  */
 float Magnetometer::getLinearHeading()
 {
+  if (!isMagnetPresent())
+    return NAN;
+
   float currentRaw = getRawHeading();
 
   if (!m_isCalibrated)
@@ -115,6 +123,9 @@ float Magnetometer::getLinearHeading()
   currentRaw = normRaw + m_rawAt0;
 
   // 2. Linear Interpolation Lookup
+  float result = 0.0;
+  bool found = false;
+
   for (int i = 0; i < NUM_POINTS - 1; i++)
   {
     if (currentRaw >= m_rawReadings[i] && currentRaw <= m_rawReadings[i + 1])
@@ -124,18 +135,26 @@ float Magnetometer::getLinearHeading()
       float y0 = m_physicalAngles[i];
       float y1 = m_physicalAngles[i + 1];
 
-      // Formula: y = y0 + (x - x0) * (y1 - y0) / (x1 - x0)
-      return y0 + (currentRaw - x0) * (y1 - y0) / (x1 - x0);
+      result = y0 + (currentRaw - x0) * (y1 - y0) / (x1 - x0);
+      found = true;
+      break;
     }
   }
 
-  // 3. Out-of-bounds Clamping
-  if (currentRaw < m_rawReadings[0])
-    return m_physicalAngles[0];
-  if (currentRaw > m_rawReadings[NUM_POINTS - 1])
-    return m_physicalAngles[NUM_POINTS - 1];
+  // 3. Out-of-bounds: clamp to the nearest boundary raw, then hard-clamp to ±90
+  if (!found)
+  {
+    if (currentRaw < m_rawReadings[0])
+      result = m_physicalAngles[0];
+    else
+      result = m_physicalAngles[NUM_POINTS - 1];
+  }
 
-  return 0.0;
+  // 4. Hard clamp — both sensors share the same ±90 physical limits
+  if (result >  90.0) result =  90.0;
+  if (result < -90.0) result = -90.0;
+
+  return result;
 }
 
 // ---------------------------------------------------------
@@ -145,6 +164,11 @@ float Magnetometer::getLinearHeading()
 void Magnetometer::getRawAxes(float &x, float &y, float &z)
 {
   m_sensor.readData(&x, &y, &z);
+}
+
+bool Magnetometer::isMagnetPresent()
+{
+  return getMagnitude() >= Params::MagSensorValues::minMagnitude;
 }
 
 float Magnetometer::getMagnitude()

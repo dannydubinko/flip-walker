@@ -9,11 +9,8 @@ class MagnetometerCalibrator
 public:
     MagnetometerCalibrator(Magnetometer &mag);
 
-    // Starts the interactive serial calibration
-    void runInterativeCalibration(int numPoints = 13);
-
-    // Utility to print the final arrays in a copy-paste format
-    void printCalibrationArrays();
+    void runInterativeCalibration(int numPoints = 7, const String &legLabel = "LEG_1");
+    void printCalibrationArrays(const String &legLabel);
 
 private:
     Magnetometer &m_mag;

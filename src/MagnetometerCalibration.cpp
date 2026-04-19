@@ -1,50 +1,49 @@
 #include "MagnetometerCalibrator.hpp"
+#include "params.hpp"
 
 MagnetometerCalibrator::MagnetometerCalibrator(Magnetometer &mag)
     : m_mag(mag), m_rawBuffer(nullptr), m_angleBuffer(nullptr), m_numPoints(0)
 {
 }
 
-void MagnetometerCalibrator::runInterativeCalibration(int numPoints)
+void MagnetometerCalibrator::runInterativeCalibration(int numPoints, const String &legLabel)
 {
     m_numPoints = numPoints;
 
-    // Clean up old buffers if they exist
-    if (m_rawBuffer)
-        delete[] m_rawBuffer;
-    if (m_angleBuffer)
-        delete[] m_angleBuffer;
+    if (m_rawBuffer) delete[] m_rawBuffer;
+    if (m_angleBuffer) delete[] m_angleBuffer;
 
-    m_rawBuffer = new float[m_numPoints];
+    m_rawBuffer  = new float[m_numPoints];
     m_angleBuffer = new float[m_numPoints];
 
-    Serial.println("\n--- FlipWalker Magnetometer Calibration ---");
-    Serial.print("Preparing to calibrate ");
-    Serial.print(m_numPoints);
-    Serial.println(" points.");
+    Serial.println();
+    Serial.print("=== Calibrating "); Serial.print(legLabel); Serial.println(" ===");
 
     float startAngle = -90.0;
-    float endAngle = 90.0;
+    float endAngle   =  90.0;
     float step = (endAngle - startAngle) / (m_numPoints - 1);
 
     for (int i = 0; i < m_numPoints; i++)
     {
         float targetAngle = startAngle + (i * step);
-        m_angleBuffer[i] = targetAngle;
+        m_angleBuffer[i]  = targetAngle;
 
-        Serial.print("\n[Step ");
-        Serial.print(i + 1);
-        Serial.print("/");
-        Serial.print(m_numPoints);
-        Serial.println("]");
-        Serial.print(">> Move FlipWalker to exactly: ");
-        Serial.print(targetAngle);
-        Serial.println(" degrees.");
-        Serial.println(">> Press ANY key in Serial Monitor to capture...");
+        Serial.print("\n[Step "); Serial.print(i + 1); Serial.print("/"); Serial.print(m_numPoints); Serial.println("]");
+        Serial.print(">> Move joint to: "); Serial.print(targetAngle, 1); Serial.println(" degrees");
+        Serial.println(">> Press ANY key to capture...");
 
         waitForUser();
 
-        // Take an average of 50 readings to eliminate noise/jitter
+        if (!m_mag.isMagnetPresent())
+        {
+            Serial.print("WARNING: No magnet detected (magnitude=");
+            Serial.print(m_mag.getMagnitude(), 2);
+            Serial.print(", threshold=");
+            Serial.print(Params::MagSensorValues::minMagnitude, 0);
+            Serial.println("). Move magnet closer and press any key to retry.");
+            waitForUser();
+        }
+
         float sum = 0;
         const int samples = 50;
         for (int s = 0; s < samples; s++)
@@ -52,54 +51,56 @@ void MagnetometerCalibrator::runInterativeCalibration(int numPoints)
             sum += m_mag.getRawHeading();
             delay(10);
         }
-
         m_rawBuffer[i] = sum / (float)samples;
 
-        Serial.print("Captured Raw Value: ");
-        Serial.println(m_rawBuffer[i]);
+        Serial.print("Captured: "); Serial.print(m_rawBuffer[i], 4);
+        Serial.print("  (magnitude: "); Serial.print(m_mag.getMagnitude(), 2); Serial.println(")");
     }
 
-    printCalibrationArrays();
+    printCalibrationArrays(legLabel);
 }
 
 void MagnetometerCalibrator::waitForUser()
 {
-    while (Serial.available() > 0)
-        Serial.read(); // Flush existing
-    while (Serial.available() == 0)
-        delay(10); // Wait for new
-    while (Serial.available() > 0)
-        Serial.read(); // Flush trigger
+    while (Serial.available() > 0) Serial.read();
+    while (Serial.available() == 0) delay(10);
+    while (Serial.available() > 0) Serial.read();
 }
 
-void MagnetometerCalibrator::printCalibrationArrays()
+void MagnetometerCalibrator::printCalibrationArrays(const String &legLabel)
 {
-    Serial.println("\n--- CALIBRATION COMPLETE ---");
-    Serial.println("Copy and paste these arrays into your main script:\n");
-
-    // Print Physical Angles (reversed: 90 to -90 for params)
-    Serial.print("float physicalAngles[");
-    Serial.print(m_numPoints);
-    Serial.print("] = {");
-    for (int i = m_numPoints - 1; i >= 0; i--)
+    // Normalize all raw readings relative to the 0-degree capture to fix atan2 wrap-around.
+    // The 0-degree reading is the middle index.
+    float ref = m_rawBuffer[m_numPoints / 2];
+    for (int i = 0; i < m_numPoints; i++)
     {
-        Serial.print(m_angleBuffer[i], 1);
-        if (i > 0)
-            Serial.print(", ");
+        float diff = m_rawBuffer[i] - ref;
+        while (diff >  180) diff -= 360;
+        while (diff < -180) diff += 360;
+        m_rawBuffer[i] = diff + ref;
     }
-    Serial.println("};");
 
-    // Print Raw Readings (reversed: 90 to -90 for params)
-    Serial.print("float rawReadings[");
-    Serial.print(m_numPoints);
-    Serial.print("] = {");
-    for (int i = m_numPoints - 1; i >= 0; i--)
+    // Sort (raw, angle) pairs by raw value ascending so the LUT bracket search works.
+    for (int i = 0; i < m_numPoints - 1; i++)
+    {
+        for (int j = 0; j < m_numPoints - 1 - i; j++)
+        {
+            if (m_rawBuffer[j] > m_rawBuffer[j + 1])
+            {
+                float tmpR = m_rawBuffer[j];   m_rawBuffer[j]   = m_rawBuffer[j + 1];   m_rawBuffer[j + 1]   = tmpR;
+                float tmpA = m_angleBuffer[j]; m_angleBuffer[j] = m_angleBuffer[j + 1]; m_angleBuffer[j + 1] = tmpA;
+            }
+        }
+    }
+
+    Serial.println("\n--- CALIBRATION COMPLETE ---");
+    Serial.println("Copy these into params.hpp:\n");
+
+    Serial.print("static const float RAW_READINGS_"); Serial.print(legLabel); Serial.print("[7] = {");
+    for (int i = 0; i < m_numPoints; i++)
     {
         Serial.print(m_rawBuffer[i], 4);
-        if (i > 0)
-            Serial.print(", ");
+        if (i < m_numPoints - 1) Serial.print(", ");
     }
     Serial.println("};");
-
-    Serial.println("\nUse mag.setFullCalibration(rawReadings, physicalAngles, 7);");
 }

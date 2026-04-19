@@ -6,26 +6,17 @@
 #include "params.hpp"
 
 // --- Wi-Fi Credentials ---
-// const char *ssid = "Nicol 116";
-// const char *password = "thenerdlab";
-
 const char *ssid = Params::Wifi::wifi_name;
 const char *password = Params::Wifi::wifi_password;
 
 // --- Web Server on Port 80 ---
 WebServer server(80);
 
-// --- Pin Definitions ---
-// DC Motor 1 (Right / Battery Side)
-#define MOTOR1_IN1 27
-#define MOTOR1_IN2 14
-// DC Motor 2 (Left)
-#define MOTOR2_IN1 26
-#define MOTOR2_IN2 25
-
-// Servo Pins
-static const int servoPin1 = 13; // Main body servo
-static const int servoPin2 = 12; // Sub body servo
+// --- Pin Definitions (from params) ---
+#define MOTOR1_IN1 Params::Pins::kMotor1_In1
+#define MOTOR1_IN2 Params::Pins::kMotor1_In2
+#define MOTOR2_IN1 Params::Pins::kMotor2_In1
+#define MOTOR2_IN2 Params::Pins::kMotor2_In2
 
 // --- Object Initialization ---
 Servo myservo1;
@@ -142,8 +133,8 @@ void setup()
     pinMode(MOTOR2_IN2, OUTPUT);
 
     // 2. Initialize Servos
-    myservo1.attach(servoPin1);
-    myservo2.attach(servoPin2);
+    myservo1.attach(Params::Pins::servoPin1);
+    myservo2.attach(Params::Pins::servoPin2);
     myservo1.write(90);
     myservo2.write(90);
 
@@ -155,7 +146,7 @@ void setup()
         Params::MagSensorValues::RAW_READINGS_LEG_1,
         Params::MagSensorValues::PHYSICAL_ANGLES);
     mag2.setFullCalibration(
-        Params::MagSensorValues::RAW_READINGS_LEG_1,
+        Params::MagSensorValues::RAW_READINGS_LEG_2,
         Params::MagSensorValues::PHYSICAL_ANGLES);
 
     // 4. Connect to Wi-Fi

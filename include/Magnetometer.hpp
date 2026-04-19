@@ -37,7 +37,8 @@ public:
     float getMagnitude();
     float getRawHeading();
     float getDistance(float K);
+    bool isMagnetPresent();
 
-    float getHeading();       // 3-point mapping
-    float getLinearHeading(); // 7-point High-Precision LUT
+    float getHeading();       // 3-point mapping — returns NAN if no magnet
+    float getLinearHeading(); // 7-point High-Precision LUT — returns NAN if no magnet
 };
