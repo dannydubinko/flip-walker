@@ -1,0 +1,27 @@
+Overall Goal:
+    - The robots were put into a configuration manually.
+    - Repeat the configuration autonomously
+    - Rotation and Manuverablity on rough terrain.
+    - State transition and control 
+    - Converting to 12V power
+    - Alignment with other bots. 
+
+Control:
+    - Control Model 
+    
+
+Maneuvering on Rough Terrain:
+    - Treads ?
+    - Rotating Base ?
+    - Extending Nips? 
+
+Alignment with Other Bots:
+    - Lanes ?
+    - Magnets ?
+
+Sensors:
+    - 3D Magnetometer 
+    - Second Battery 
+    - IMU ?
+    - Camera ?
+

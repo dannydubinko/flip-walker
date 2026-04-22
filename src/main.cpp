@@ -90,7 +90,7 @@ void doFlip()
     delay(2000);
 
     Serial.println("Activating parent servo to 0...");
-    parentServo.write(0);
+    parentServo.write(20);
     delay(1500);
     parentServo.write(90);
     delay(1500);
@@ -109,7 +109,7 @@ void doFlip()
     delay(2000);
 
     Serial.println("Activating child servo to 180...");
-    childServo.write(180);
+    childServo.write(160);
     delay(1500);
     childServo.write(90);
     delay(1500);

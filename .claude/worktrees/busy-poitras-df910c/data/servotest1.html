@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FlipWalker Servo and Motor Control Interface</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      padding: 20px;
+    }
+    .slider {
+      width: 300px;
+    }
+    .button {
+      margin: 10px;
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    .joystick {
+      display: grid;
+      grid-template-rows: 100px 100px 100px;
+      grid-template-columns: 100px 100px 100px;
+      gap: 10px;
+      justify-content: center;
+      align-items: center;
+    }
+    .joystick button {
+      width: 100px;
+      height: 100px;
+      font-size: 18px;
+      font-weight: bold;
+      background-color: #f0f0f0;
+      border: 2px solid #ccc;
+      border-radius: 10px;
+      cursor: pointer;
+    }
+    .joystick button:hover {
+      background-color: #ddd;
+    }
+  </style>
+</head>
+<body>
+  <h1>Servo and Motor Control Interface</h1>
+
+  <p>Enter the target IP address of your ESP32 (e.g., 192.168.31.13):</p>
+  <input type="text" id="ipAddress" placeholder="e.g., 192.168.31.13" style="width: 300px;" />
+
+  <h2>Servo 1 Control</h2>
+  <p>Servo 1 Position: <span id="servo1Value">90</span></p>
+  <input type="range" min="0" max="180" value="90" class="slider" id="servo1Slider" oninput="updateServo(1, this.value)">
+
+  <h2>Servo 2 Control</h2>
+  <p>Servo 2 Position: <span id="servo2Value">90</span></p>
+  <input type="range" min="0" max="180" value="90" class="slider" id="servo2Slider" oninput="updateServo(2, this.value)">
+
+  <h2>Motor Control</h2>
+  <div class="joystick">
+    <button></button>
+    <button onclick="controlMotors(200, -200)">Forward</button>
+    <button></button>
+    <button onclick="controlMotors(200, 0)">Left</button>
+    <button onclick="controlMotors(0, 0)">Stop</button>
+    <button onclick="controlMotors(0, -200)">Right</button>
+    <button></button>
+    <button onclick="controlMotors(-200, 200)">Backward</button>
+    <button></button>
+  </div>
+
+  <script>
+    function updateServo(servoNumber, value) {
+      const ip = document.getElementById('ipAddress').value;
+      if (!ip) {
+        alert('Please enter the target IP address first!');
+        return;
+      }
+
+      const url = `http://${ip}/?servo${servoNumber}=${value}`;
+      document.getElementById(`servo${servoNumber}Value`).textContent = value;
+
+      // Send the fetch request
+      fetch(url)
+        .then(response => {
+          if (response.ok) {
+            console.log(`Servo ${servoNumber} set to ${value}`);
+          } else {
+            console.error('Failed to send request');
+          }
+        })
+        .catch(error => {
+          console.error('Error:', error);
+        });
+    }
+
+    function controlMotors(speed1, speed2) {
+      const ip = document.getElementById('ipAddress').value;
+      if (!ip) {
+        alert('Please enter the target IP address first!');
+        return;
+      }
+
+      // Send fetch requests for both motors
+      const motor1Url = `http://${ip}/?motor1=${speed1}`;
+      const motor2Url = `http://${ip}/?motor2=${speed2}`;
+
+      fetch(motor1Url)
+        .then(response => {
+          if (response.ok) {
+            console.log(`Motor 1 set to ${speed1}`);
+          } else {
+            console.error('Failed to send Motor 1 request');
+          }
+        })
+        .catch(error => {
+          console.error('Error:', error);
+        });
+
+      fetch(motor2Url)
+        .then(response => {
+          if (response.ok) {
+            console.log(`Motor 2 set to ${speed2}`);
+          } else {
+            console.error('Failed to send Motor 2 request');
+          }
+        })
+        .catch(error => {
+          console.error('Error:', error);
+        });
+    }
+  </script>
+</body>
+</html>

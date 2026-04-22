@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FlipWalker Servo and Motor Control Interface v07c</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      padding: 20px;
+    }
+    .slider {
+      width: 300px;
+    }
+    .button {
+      margin: 10px;
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    .joystick {
+      display: grid;
+      grid-template-rows: 100px 100px 100px;
+      grid-template-columns: 100px 100px 100px;
+      gap: 10px;
+      justify-content: center;
+      align-items: center;
+    }
+    .joystick button {
+      width: 100px;
+      height: 100px;
+      font-size: 18px;
+      font-weight: bold;
+      background-color: #f0f0f0;
+      border: 2px solid #ccc;
+      border-radius: 10px;
+      cursor: pointer;
+    }
+    .joystick button:hover {
+      background-color: #ddd;
+    }
+  </style>
+</head>
+<body>
+  <h1>FlipWalker Servo and Motor Control Interface v07c</h1>
+
+  <p>Enter the target IP address of your ESP32 (e.g., 192.168.31.13):</p>
+  <input type="text" id="ipAddress" placeholder="e.g., 192.168.31.13" style="width: 300px;" />
+
+  <h2>Servo A Control</h2>
+  <button class="button" onclick="setServoPosition(1, 0)">0°</button>
+  <button class="button" onclick="setServoPosition(1, 90)">90°</button>
+  <button class="button" onclick="setServoPosition(1, 180)">180°</button>
+  <p>Servo A Position: <span id="servo1Value">90</span></p>
+  <input type="range" min="0" max="180" value="90" class="slider" id="servo1Slider" oninput="updateServo(1, this.value)">
+
+  <h2>Servo B Control</h2>
+  <button class="button" onclick="setServoPosition(2, 0)">0°</button>
+  <button class="button" onclick="setServoPosition(2, 90)">90°</button>
+  <button class="button" onclick="setServoPosition(2, 180)">180°</button>
+  <p>Servo B Position: <span id="servo2Value">90</span></p>
+  <input type="range" min="0" max="180" value="90" class="slider" id="servo2Slider" oninput="updateServo(2, this.value)">
+
+  <h2>Motor Control</h2>
+  <div class="joystick">
+    <button></button>
+    <button onclick="controlMotors(150, -150)">Forward</button>
+    <button></button>
+    <button onclick="controlMotors(200, 200)">Left</button>
+    <button onclick="controlMotors(0, 0)">Stop</button>
+    <button onclick="controlMotors(-200, -200)">Right</button>
+    <button></button>
+    <button onclick="controlMotors(-120, 120)">Backward</button>
+    <button></button>
+  </div>
+
+  <h2>Step Move Control</h2>
+  <p>Step Duration (ms): <input type="number" id="stepDuration" value="500" style="width: 100px;"></p>
+  <button class="button" onclick="stepMove('forward')">Step Forward</button>
+  <button class="button" onclick="stepMove('backward')">Step Backward</button>
+
+  <script>
+    function updateServo(servoNumber, value) {
+      const ip = document.getElementById('ipAddress').value;
+      if (!ip) {
+        alert('Please enter the target IP address first!');
+        return;
+      }
+
+      const url = `http://${ip}/?servo${servoNumber}=${value}`;
+      document.getElementById(`servo${servoNumber}Value`).textContent = value;
+      document.getElementById(`servo${servoNumber}Slider`).value = value;
+
+      fetch(url)
+        .then(response => {
+          if (response.ok) {
+            console.log(`Servo ${servoNumber} set to ${value}`);
+          } else {
+            console.error('Failed to send request');
+          }
+        })
+        .catch(error => {
+          console.error('Error:', error);
+        });
+    }
+
+    function setServoPosition(servoNumber, position) {
+      updateServo(servoNumber, position);
+    }
+
+    function controlMotors(speed1, speed2) {
+      const ip = document.getElementById('ipAddress').value;
+      if (!ip) {
+        alert('Please enter the target IP address first!');
+        return;
+      }
+
+      const motor1Url = `http://${ip}/?motor1=${speed1}`;
+      const motor2Url = `http://${ip}/?motor2=${speed2}`;
+
+      fetch(motor1Url);
+      fetch(motor2Url);
+    }
+
+    function stepMove(direction) {
+      const duration = parseInt(document.getElementById('stepDuration').value) || 500;
+
+      if (direction === 'forward') {
+        controlMotors(200, -200);
+      } else {
+        controlMotors(-200, 200);
+      }
+
+      setTimeout(() => controlMotors(0, 0), duration);
+    }
+  </script>
+</body>
+</html>
