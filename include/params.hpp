@@ -28,12 +28,12 @@ namespace Params
     namespace Motors
     {
         // Which hardware motor number (1 or 2) is left/right
-        static constexpr int leftMotor  = 1;
+        static constexpr int leftMotor = 1;
         static constexpr int rightMotor = 2;
 
         // Forward direction per motor: 1 = positive speed is forward, -1 = negative speed is forward
         // Flip these if a motor is mounted in reverse
-        static constexpr int leftForward  =  1;
+        static constexpr int leftForward = 1;
         static constexpr int rightForward = -1;
 
         // Default drive speed (0-255)
@@ -42,8 +42,8 @@ namespace Params
 
     namespace Wifi
     {
-        static constexpr const char *wifi_name = "BELL549";
-        static constexpr const char *wifi_password = "1FFCC99A399E";
+        static constexpr const char *wifi_name = "Nicol 116";
+        static constexpr const char *wifi_password = "thenerdlab";
         // const char *ssid = "Nicol 116";
         // const char *password = "thenerdlab";
         static constexpr int portNumber = 80;
