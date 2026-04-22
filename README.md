@@ -4,8 +4,15 @@ FlipWalker is an ESP32-based bipedal robot that locomotes by alternately flippin
 
 ---
 
+## Acknowledgements
+
+This project is based on original research conducted by the **NERD Lab (Novel Engineering Research and Design Lab)** at **Queen's University**. The FlipWalker locomotion concept, mechanical design, and underlying control principles were developed by the NERD Lab research group. This firmware is an implementation of that work, developed as part of a MECH 461 course project.
+
+---
+
 ## Table of Contents
 
+- [Acknowledgements](#acknowledgements)
 - [Hardware Overview](#hardware-overview)
 - [Repository Structure](#repository-structure)
 - [Firmware Variants](#firmware-variants)
